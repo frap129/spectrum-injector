@@ -10,8 +10,6 @@ do.cleanuponabort=0
 
 # shell variables
 block=
-is_slot_device=0;
-
 
 ## AnyKernel methods (DO NOT CHANGE)
 # import patching functions/variables - see for reference
