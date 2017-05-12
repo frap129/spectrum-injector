@@ -312,5 +312,64 @@ patch_prop() {
   fi;
 }
 
+# find the location of the boot block
+find_boot() {
+	verify_block() {
+		block=$(readlink -f "$block")
+		# if the boot block is a file, we must use dd
+		if [ -f "$block" ]; then
+			use_dd=true
+		# if the boot block is a block device, we use flash_image when possible
+		elif [ -b "$block" ]; then
+			case "$block" in
+				/dev/block/bml*|/dev/block/mtd*|/dev/block/mmc*)
+					use_dd=false ;;
+				*)
+					use_dd=true ;;
+			esac
+		# otherwise we have to keep trying other locations
+		else
+			return 1
+		fi
+		ui_print " "; ui_print "Found boot partition at: $block"
+	}
+	# if we already have boot block set then verify and use it
+	[ "$block" ] && verify_block && return
+	# otherwise, time to go hunting!
+	if [ -f /etc/recovery.fstab ]; then
+		# recovery fstab v1
+		block=$(awk '$1 == "/boot" {print $3}' /etc/recovery.fstab)
+		[ "$block" ] && verify_block && return
+		# recovery fstab v2
+		block=$(awk '$2 == "/boot" {print $1}' /etc/recovery.fstab)
+		[ "$block" ] && verify_block && return
+	fi
+	for fstab in /fstab.*; do
+		[ -f "$fstab" ] || continue
+		# device fstab v2
+		block=$(awk '$2 == "/boot" {print $1}' "$fstab")
+		[ "$block" ] && verify_block && return
+		# device fstab v1
+		block=$(awk '$1 == "/boot" {print $3}' "$fstab")
+		[ "$block" ] && verify_block && return
+	done
+	if [ -f /proc/emmc ]; then
+		# emmc layout
+		block=$(awk '$4 == "\"boot\"" {print $1}' /proc/emmc)
+		[ "$block" ] && block=/dev/block/$(echo "$block" | cut -f1 -d:) && verify_block && return
+	fi
+	if [ -f /proc/mtd ]; then
+		# mtd layout
+		block=$(awk '$4 == "\"boot\"" {print $1}' /proc/mtd)
+		[ "$block" ] && block=/dev/block/$(echo "$block" | cut -f1 -d:) && verify_block && return
+	fi
+	if [ -f /proc/dumchar_info ]; then
+		# mtk layout
+		block=$(awk '$1 == "/boot" {print $5}' /proc/dumchar_info)
+		[ "$block" ] && verify_block && return
+	fi
+	ui_print " "; ui_print "Unable to find boot block location"; exit 1;
+}
+
 ## end methods
 
