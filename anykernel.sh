@@ -32,7 +32,7 @@ dump_boot;
 
 # init.rc
 backup_file init.rc;
-insert_line init.rc "import /init.spectrum.rc" after "import /init.trace.rc" "import /init.spectrum.rc"
+grep "import /init.spectrum.rc" init.rc >/dev/null || sed -i '1,/.*import.*/s/.*import.*/import \/init.spectrum.rc\n&/' init.rc
 # end ramdisk changes
 
 write_boot;
@@ -40,8 +40,11 @@ write_boot;
 # end install
 
 # Add empty profile locations
-mkdir /data/spectrum;
-touch /data/spectrum/balance.profile;
-touch /data/spectrum/performance.profile;
-touch /data/spectrum/battery.profile;
-touch /data/spectrum/gaming.profile;
+ui_print " "; ui_print "Creating /data/media/0/Spectrum..."
+mkdir /data/media/0/Spectrum;
+mkdir /data/media/0/Spectrum/profiles;
+ui_print " "; ui_print "Creating empty profile files..."
+touch /data/media/0/Spectrum/profiles/balance.profile;
+touch /data/media/0/Spectrum/profiles/performance.profile;
+touch /data/media/0/Spectrum/profiles/battery.profile;
+touch /data/media/0/Spectrum/profiles/gaming.profile;
