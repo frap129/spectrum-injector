@@ -40,11 +40,17 @@ write_boot;
 # end install
 
 # Add empty profile locations
-ui_print " "; ui_print "Creating /data/media/0/Spectrum..."
-mkdir /data/media/0/Spectrum;
-mkdir /data/media/0/Spectrum/profiles;
-ui_print " "; ui_print "Creating empty profile files..."
-touch /data/media/0/Spectrum/profiles/balance.profile;
-touch /data/media/0/Spectrum/profiles/performance.profile;
-touch /data/media/0/Spectrum/profiles/battery.profile;
-touch /data/media/0/Spectrum/profiles/gaming.profile;
+if [ ! -d /data/media/Spectrum ]; then
+  ui_print " "; ui_print "Creating /data/media/0/Spectrum...";
+  mkdir /data/media/0/Spectrum;
+fi
+if [ ! -d /data/media/Spectrum/profiles ]; then
+  mkdir /data/media/0/Spectrum/profiles;
+fi
+if [ ! -d /data/media/Spectrum/profiles/*.profile ]; then
+  ui_print " "; ui_print "Creating empty profile files...";
+  touch /data/media/0/Spectrum/profiles/balance.profile;
+  touch /data/media/0/Spectrum/profiles/performance.profile;
+  touch /data/media/0/Spectrum/profiles/battery.profile;
+  touch /data/media/0/Spectrum/profiles/gaming.profile;
+fi
